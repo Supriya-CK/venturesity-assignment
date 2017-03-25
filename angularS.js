@@ -23,7 +23,8 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 
     $scope.fetchForm = function() {
     	$('#formDisplay').empty();
-    	validationsArray =[];
+    	$scope.validationError = "";
+    	validationsArray = [];
 		$http.get("https://randomform.herokuapp.com").success(function (response) {
 			formData = response;
 			renderForm();
@@ -31,7 +32,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 	}
 
 	function renderForm () {
-		var element = "<form><label>"+formData.data.form_id+"</label>";
+		var element = "<form><h3>"+formData.data.form_id+"</h3>";
 		formData.data.form_fields.forEach(function (temp, index, arr) {
 			var tempId = "field"+index;
 			var tempElement = "";
@@ -39,15 +40,14 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 			switch(temp.component){
 				case 'textinput':
 					tempElement = "";
-					element +=  "<fieldset><label>"+temp.label+"</label>";
+					element +=  "<fieldset><label>"+temp.label+"</label><br>";
 					if(temp.autofill){
-						tempElement = "<input type='text' id='"+tempId+"' name='"+temp.label+"'  value='"+temp.autofill+"' disabled required><br><fieldset>";
+						tempElement = "<input type='text' id='"+tempId+"' name='"+temp.label+"'  value='"+temp.autofill+"' disabled required><br></fieldset>";
 					} else {
-						tempElement = "<input type='text' id='"+tempId+"'  name='"+temp.label+"'><br><fieldset>";
+						tempElement = "<input type='text' id='"+tempId+"'  name='"+temp.label+"'><br></fieldset>";
 					}
 					element += tempElement;
 					if (temp.validation) {
-						console.log(tempId,tempElement);
 						pushValidation(temp.component, tempId, temp.validation);
 					}
 
@@ -55,15 +55,14 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 					break;
 				case 'textarea':
 					tempElement = "";
-					element +=  "<fieldset><label>"+temp.label+"</label>";
+					element +=  "<fieldset><label>"+temp.label+"</label><br>";
 					if (temp.autofill != null) {
-						tempElement = "<textarea rows='4' cols='50' name='"+temp.label+"' id='"+tempId+"'  disabled required>"+temp.autofill+"</textarea><br><fieldset>";
+						tempElement = "<textarea rows='4' cols='50' name='"+temp.label+"' id='"+tempId+"'  disabled required>"+temp.autofill+"</textarea><br></fieldset>";
 					} else {
-						tempElement = "<textarea rows='4' cols='50' name='"+temp.label+"' id='"+tempId+"'></textarea><br><fieldset>";
+						tempElement = "<textarea rows='4' cols='50' name='"+temp.label+"' id='"+tempId+"'></textarea><br></fieldset>";
 					}
 					element += tempElement;
 					if (temp.validation) {
-						console.log(tempId,tempElement);
 						pushValidation(temp.component, tempId, temp.validation);
 					}
 
@@ -95,7 +94,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 				case 'radio':
 					var temArray =[];
 					temArray = temp.options.toString().split(',');
-					element += 	"<fieldset><label>"+temp.label+"</label>";
+					element += 	"<fieldset><label>"+temp.label+"</label><br>";
 					if (temp.autoselect != null) {
 						temArray.forEach( function(option) {
 							if (option == temp.autoselect) {
@@ -116,12 +115,10 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 					var auto=[];
 					var temArray =[];
 					temArray = temp.options.toString().split(',');
-					element += 	"<fieldset><label>"+temp.label+"</label>";
+					element += 	"<fieldset><label>"+temp.label+"</label><br>";
 					if(temp.autoselect != null){
 						var auto = temp.autoselect;
 						auto = auto.toString().split(',');
-						console.log("autoselect:  "+temp.autoselect);
-						console.log("temArray:"+temArray);
 						temArray.forEach(function(saveEach){
 							if(auto.indexOf(saveEach) != -1){
 								element += "<input type='checkbox' name='"+saveEach+"' disabled='disabled' checked='checked'>"+saveEach+"<br>";
@@ -142,7 +139,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 			}
 		});
 
-		element += "<fieldset><input type='submit' value='submit' ng-click='submitFunc($event)'><fieldset></form>";
+		element += "<fieldset><input type='submit' class='button' value='Submit' ng-click='submitFunc($event)'><span>{{validationError}}</span></fieldset></form>";
 
 		compiledElement = $compile(element)($scope);
 		$('#formDisplay').append(compiledElement);
@@ -168,16 +165,16 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 
 			var form = $('form');
 			var disabled = form.find(':disabled').removeAttr('disabled');
-			var data = JSON.stringify(form.serializeObject());
+			var data = form.serializeObject();
 			disabled.attr('disabled','disabled');
 
 			console.log(data);
 			submitThisForm(data);
 
 			$('#formDisplay').empty();
-			$('#formDisplay').append("<h1>Successfully Submitted</h1>");
+			$('#formDisplay').append("<h3>Successfully Submitted</h3>");
 		} else {
-			$('#formDisplay').append("<h1>Validation Failed</h1>");
+			$scope.validationError = "Validation Failed";
 		}
 	}
 
@@ -195,7 +192,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 					_isValidFlag = true;
 				} else{
 					_isValidFlag = false;
-					$('#'+validObj.id).css("border", "1px solid red");
+					$('#'+validObj.id).css("border", "1px solid #ef404a");
 
 				}
 				
