@@ -3,8 +3,32 @@ var app = angular.module("angularForm",[]);
 app.controller('myCtrl', function($scope,$http,$compile) {
 
 	var formData = {};
-
 	var validationsArray = [];
+
+    $.fn.serializeObject = function() {
+		var o = {};
+		var a = this.serializeArray();
+		$.each(a, function() {
+			if (o[this.name]) {
+				if (!o[this.name].push) {
+					o[this.name] = [o[this.name]];
+				}
+				o[this.name].push(this.value || '');
+			} else {
+				o[this.name] = this.value || '';
+			}
+		});
+		return o;
+	};
+
+    $scope.fetchForm = function() {
+    	$('#formDisplay').empty();
+    	validationsArray =[];
+		$http.get("https://randomform.herokuapp.com").success(function (response) {
+			formData = response;
+			renderForm();
+		});
+	}
 
 	function renderForm () {
 		var element = "<form><label>"+formData.data.form_id+"</label>";
@@ -137,100 +161,34 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 		validationsArray.push(_validObj);
 	}
 
-    $scope.fetchForm = function() {
-    	$('#formDisplay').empty();
-    	validationsArray =[];
-		$http.get("https://randomform.herokuapp.com").success(function (response) {
-			formData = response;
-			renderForm();
-		});
-	}
-    $.fn.serializeObject = function() {
-		var o = {};
-		var a = this.serializeArray();
-		$.each(a, function() {
-			if (o[this.name]) {
-				if (!o[this.name].push) {
-					o[this.name] = [o[this.name]];
-				}
-				o[this.name].push(this.value || '');
-			} else {
-				o[this.name] = this.value || '';
-			}
-		});
-		return o;
-	};
 	$scope.submitFunc = function($event){
 		var isValid = vaildateFields();
 
 		if (isValid) {
 
 			var form = $('form');
-
-			// Find disabled inputs, and remove the "disabled" attribute
 			var disabled = form.find(':disabled').removeAttr('disabled');
-
-			// serialize the form
 			var data = JSON.stringify(form.serializeObject());
-
-			// re-disabled the set of inputs that you previously enabled
 			disabled.attr('disabled','disabled');
 
 			console.log(data);
-			$('#formDisplay').empty();
-			var element = "<h1>Successfully Submitted</h1>";
-			compiledElement = $compile(element)($scope);
-			$('#formDisplay').append(compiledElement);
-		} else {
-			//$('#formDisplay').empty();
-			var element = "<h1>Validation Failed</h1>";
-			compiledElement = $compile(element)($scope);
-			$('#formDisplay').append(compiledElement);
-		}
+			submitThisForm(data);
 
-		// var form=document.getElementById("formDisplay");
-		// var formData=new FormData(form);
-		// var data = JSON.stringify(formData)
-		// $http.post("https://randomform.herokuapp.com/submit", data);
-		// $('#formDisplay').empty();
-		// var element = "<h1>Submitted Successfully</h1>";
-		// angular.element(document.getElementById('formDisplay')).append($compile(element)($scope));
-		// console.log(form);
+			$('#formDisplay').empty();
+			$('#formDisplay').append("<h1>Successfully Submitted</h1>");
+		} else {
+			$('#formDisplay').append("<h1>Validation Failed</h1>");
+		}
 	}
 
 	function vaildateFields () {
-
 		var _isValidFlag = true;
 		//What type of field, i.e textarea/input etc
 		//How to find/get that fields ie ID
 		//What is the validation i.e RegExp
-
-		// [
-		// 	{
-		// 		type: "textearea"
-		// 		id: "field1",
-		// 		regexp: "/{234234]/"
-		// 	},
-		// 	{
-		// 		type:
-		// 		id:
-		// 		regexp:
-		// 	},
-		// 	{
-		// 		type:
-		// 		id:
-		// 		regexp:
-		// 	}
-		// ]
-
 		if (validationsArray.length > 0) {
 			//inside this you will set _isValidFlag = false if needed
 			validationsArray.forEach( function (validObj) {
-				// 	{
-				// 		type: "textarea"
-				// 		id: "field1",
-				// 		regexp: "/{234234]/"
-				// 	},
 				var pattern = new RegExp(validObj.regexp);
 				var result = $('#'+validObj.id).val().match(pattern);
 				if(result){
@@ -243,7 +201,20 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 				
 			})
 		}
-
 		return _isValidFlag;
+	}
+
+	function submitThisForm (data) {
+		var config = {
+			headers: {
+				"Content-Type": "application/json"
+			}
+		}
+		$http.post("https://randomform.herokuapp.com/submit", data, config).success( function (response) {
+			console.log("Got response from server: ", response);
+		})
+		.error( function (error) {
+			console.log("Got error from server: ", error);
+		})
 	}
 });
