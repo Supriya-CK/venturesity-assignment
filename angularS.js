@@ -38,7 +38,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 						pushValidation(temp.component, tempId, temp.validation);
 					}
 
-					console.log("textinput");
+					//console.log("textinput");
 					break;
 				case 'textarea':
 					tempElement = "";
@@ -54,7 +54,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 						pushValidation(temp.component, tempId, temp.validation);
 					}
 
-					console.log("textarea");
+					//console.log("textarea");
 					break;
 				case 'select':
 					var temArray =[];
@@ -77,7 +77,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 						});
 					}
 					element += "</select></td></tr><br>";
-					console.log("select");
+					//console.log("select");
 					break;
 				case 'radio':
 					var temArray =[];
@@ -97,7 +97,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 						});
 					}
 					element += "<br></tr>"; 
-					console.log("radio");
+					//console.log("radio");
 					break;
 				case 'checkbox': 
 					var auto=[];
@@ -124,7 +124,7 @@ app.controller('myCtrl', function($scope,$http,$compile) {
 						});
 					}
 					element+= "<br></tr>"; 
-					console.log("checkbox");
+					//console.log("checkbox");
 					break;
 			}
 		});
